@@ -1,0 +1,262 @@
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Work dir used during builds. Specify the relative path of the folder in repo that contains a Makefile
+        required: true
+        type: string
+      environment:
+        description: Github environment to attach this job to
+        required: false
+        type: string
+      environment-url:
+        description: Github environment url to associate to this environment run. Can be overritten if 'deploy' target returns a URL.
+        required: false
+        type: string
+      artifact-path:
+        description: Location of the folder or file to upload to workflow artifact
+        required: false
+        type: string
+      artifact-retention:
+        description: Number of days for retaining the generated artifact. Defaults to 3.
+        default: 3
+        required: false
+        type: number
+      tooling:
+        description: Name of the build environment to setup. Must be one of 'node' or 'golang'
+        required: false
+        type: string
+      tooling-version:
+        description: Version of Node or Golang environment to setup
+        type: string
+        required: false
+      stage:
+        description: Variable available as ${STAGE} in all Make calls
+        required: false
+        type: string
+      target-build:
+        description: Run target 'build'
+        default: true
+        required: false
+        type: boolean
+      target-lint:
+        description: Run target 'lint'
+        default: true
+        required: false
+        type: boolean
+      target-unit-tests:
+        description: Run target 'unit-tests'
+        default: true
+        required: false
+        type: boolean
+      target-package:
+        description: Run target 'package'
+        default: false
+        required: false
+        type: boolean
+      target-deploy:
+        description: Run target 'deploy'. AWS_* environments will be availabled during this run
+        default: false
+        required: false
+        type: boolean
+      target-integration-tests:
+        description: Run target 'integration-tests'
+        default: false
+        required: false
+        type: boolean
+      target-get-environment-url:
+        description: Run target 'get-environment-url'. It should return the environment URL for this workflow run. Env ${DEPLOY_STDOUT} will be available with 'deploy' run outputs
+        default: false
+        required: false
+        type: boolean
+      target-undeploy:
+        description: Run target 'undeploy'
+        default: false
+        required: false
+        type: boolean
+      AWS_DEFAULT_REGION:
+        description: The AWS region to deploy resources to. Will be available as ENV during deploy and undeploy calls
+        default: ''
+        required: false
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        description: AWS Access Key ID. Will be available as ENV during deploy and undeploy calls
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        description: AWS Secret Access Key. Will be available as ENV during deploy and undeploy calls
+        required: false
+
+jobs:
+  package-deploy:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.env-url.outputs.environment-url }}
+
+    outputs:
+      environment-url: ${{ steps.envURL.outputs.environment-url }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Validate inputs and secrets (${{ inputs.working-directory }}) ${{ inputs.stage }}
+      run: |
+
+        # CHECK MAKEFILE CONTENTS
+        if [[ ! -f Makefile ]]; then
+          echo "Makefile not found at ${{ inputs.working-directory }}"
+          exit 1
+        fi
+
+        function checkTarget() {
+          targetEnabled=$1
+          targetName=$2
+          if [ "$targetEnabled" == "true" ]; then
+            make -n $targetName
+            if [ "$?" != "0" ]; then
+              echo "Target '$targetName' not found in Makefile"
+              exit 1
+            fi
+          fi
+        }
+
+        checkTarget ${{ inputs.target-build }} build
+        checkTarget ${{ inputs.target-lint }} lint
+        checkTarget ${{ inputs.target-unit-tests }} unit-tests
+        checkTarget ${{ inputs.target-package }} package
+        checkTarget ${{ inputs.target-deploy }} deploy
+        checkTarget ${{ inputs.target-get-environment-url }} get-environment-url
+        checkTarget ${{ inputs.target-integration-tests }} integration-tests
+        checkTarget ${{ inputs.target-undeploy }} undeploy
+
+        # CHECK AWS KEYS WHEN DOING DEPLOY
+        if [ "${{ inputs.target-deploy }}" == "true" || "${{ inputs.target-undeploy }}" == "true" ]; then
+          if [ "${{ inputs.AWS_DEFAULT_REGION }}" == "" ]; then
+            echo "'AWS_DEFAULT_REGION' workflow input is required when target-deploy=true or target-undeploy=true"
+            exit 1
+          fi
+
+          if [ "${{ secrets.AWS_ACCESS_KEY_ID }}" == "" ]; then
+            echo "'AWS_ACCESS_KEY_ID' workflow secret is required when target-deploy=true or target-undeploy=true"
+            exit 1
+          fi
+
+          if [ "${{ secrets.AWS_SECRET_ACCESS_KEY }}" == "" ]; then
+            echo "'AWS_SECRET_ACCESS_KEY' workflow secret is required when target-deploy=true or target-undeploy=true"
+            exit 1
+          fi
+        fi
+
+        # CHECK TOOLING CONFIGURATION
+        if [ "${{ inputs.tooling }}" != "" ]; then
+          if [ "${{ inputs.tooling }}" != "node" && "${{ inputs.tooling }}" != "golang" ]; then
+            echo "'tooling' must be one of 'node' or 'golang'"
+            exit 1
+          fi
+        fi
+
+        if [ "${{ inputs.tooling }}" == "node" ]; then
+          if [ "${{ inputs.tooling-version }}" == "" ]; then
+            echo "'tooling-version' must be set to the Node version to use. ex. '14', '18.9.1'"
+            exit 1
+          fi
+        fi
+
+        if [ "${{ inputs.tooling }}" == "golang" ]; then
+          if [ "${{ inputs.tooling-version }}" == "" ]; then
+            echo "'tooling-version' must be set to the Golang version to use. ex. '1.15', '1.16.x'"
+            exit 1
+          fi
+        fi
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.tooling-version }}
+        cache: npm
+        cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
+      if: ${{ inputs.tooling == 'node' }}
+
+    - uses: actions/setup-go@v3
+      with:
+        go-version: 1.15
+      if: ${{ inputs.tooling == 'golang' }}
+
+    - name: make build
+      run: STAGE=${{ inputs.stage }} make build
+      if: ${{ inputs.target-build }}
+
+    - name: make lint
+      run: STAGE=${{ inputs.stage }} make lint
+      if: ${{ inputs.target-lint }}
+
+    - name: make unit-tests
+      run: STAGE=${{ inputs.stage }} make unit-tests
+      if: ${{ inputs.target-unit-tests }}
+
+    - name: make package
+      run: STAGE=${{ inputs.stage }} make package
+      if: ${{ inputs.target-package }}
+
+    - name: upload generated artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact-${{ inputs.stage }}
+        path: ${{ inputs.workdir }}/${{ inputs.artifact-path }}
+        retention-days: ${{ inputs.artifact-retention }}
+      if: ${{ inputs.artifact-path != "" }}
+    
+    - name: make deploy
+      uses: mathiasvr/command-output@v1
+      id: target-deploy
+      with:
+        run: |
+          cd ${{ inputs.working-directory }}
+          STAGE=${{ inputs.stage }} AWS_DEFAULT_REGION=${{ inputs.AWS_DEFAULT_REGION }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} make deploy
+      if: ${{ inputs.target-deploy }}
+
+    - name: environment URL
+      id: env-url
+      env:
+        DEPLOY_STDOUT: ${{ steps.target-deploy.outputs.stdout }}  
+      run: |
+
+        # if environment-url set as workflow input, use it
+        if [ "${{ inputs.environment-url }}" != "" ]; then
+          echo "Setting environment-url from workflow input"
+          echo url="${{ inputs.environment-url }}"
+          echo "::set-output name=environment-url::${{ inputs.environment-url }}"
+          exit 0
+        fi
+
+        # if make target-environment-url returns an url, use it
+        if [ "${{ inputs.target-get-environment-url }}" == "true" ]; then
+          TARGET_ENV_URL=$(make get-environment-url)
+          if [ "$TARGET_ENV_URL" == "" ]; then
+            echo "Target 'get-environment-url' should return an URL"
+            exit 1
+          fi
+          echo "Setting environment-url from get-environment-url output"
+          echo url="${TARGET_ENV_URL}"
+          echo "::set-output name=environment-url::${TARGET_ENV_URL}"
+          exit 0
+        fi
+
+        echo "No environment-url set"
+
+    - name: make integration-tests
+      run: |
+        echo "ENVIRONMENT_URL=${{ steps.env-url.outputs.environment-url }}"
+        STAGE=${{ inputs.stage }} ENVIRONMENT_URL="${{ steps.env-url.outputs.environment-url }}" make integration-tests
+      if: ${{ inputs.target-integration-tests }}
+
+    - name: make undeploy
+      run: STAGE=${{ inputs.stage }} AWS_DEFAULT_REGION=${{ inputs.AWS_DEFAULT_REGION }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} make undeploy
+      if: ${{ inputs.target-undeploy }}
+
