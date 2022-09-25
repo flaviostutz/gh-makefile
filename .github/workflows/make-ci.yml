@@ -241,7 +241,7 @@ jobs:
         if [ "${{ inputs.target-get-environment-url }}" == "true" ]; then
           TARGET_ENV_URL=$(make get-environment-url)
           # search for a URL in target execution results
-        	OUT_URL=$(echo ${TARGET_ENV_URL} | { grep -Eo "environment-url: (http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
+        	OUT_URL=$(echo ${TARGET_ENV_URL} | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
           if [ "$OUT_URL" == "" ]; then
             echo "TARGET_ENV_URL=${TARGET_ENV_URL}"
             echo "Target 'get-environment-url' should return an URL"
