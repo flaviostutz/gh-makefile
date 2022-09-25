@@ -244,7 +244,7 @@ jobs:
           fi
           echo "Setting environment-url from get-environment-url output"
           echo url="${OUT_URL}"
-          echo "::set-output name=environment-url::${TARGET_ENV_URL}"
+          echo "::set-output name=environment-url::${OUT_URL}"
           exit 0
         else
           echo "Target 'get-environment-url' not found"
