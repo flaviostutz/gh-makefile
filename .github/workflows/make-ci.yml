@@ -119,11 +119,13 @@ jobs:
           targetEnabled=$1
           targetName=$2
           if [ "$targetEnabled" == "true" ]; then
+            set +e
             make -n $targetName
             if [ "$?" != "0" ]; then
               echo "Target '$targetName' not found in Makefile"
               exit 1
             fi
+            set -e
           fi
         }
 
