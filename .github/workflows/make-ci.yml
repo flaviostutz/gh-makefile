@@ -234,7 +234,7 @@ jobs:
         # if make target get-environment-url returns an url, use it
         make -n get-environment-url
         if [ "$?" == "0" ]; then
-          TARGET_ENV_URL=$(STAGE=${{ inputs.stage }} make get-environment-url)
+          TARGET_ENV_URL=$(STAGE=${{ inputs.stage }} make get-environment-url -s)
           # search for a URL in target execution results
         	OUT_URL=$(echo ${TARGET_ENV_URL} | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
           if [ "$OUT_URL" == "" ]; then
