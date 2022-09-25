@@ -96,7 +96,7 @@ jobs:
       url: ${{ steps.env-url.outputs.environment-url }}
 
     outputs:
-      environment-url: ${{ steps.envURL.outputs.environment-url }}
+      environment-url: ${{ steps.env-url.outputs.environment-url }}
 
     steps:
     - uses: actions/checkout@v3
