@@ -223,15 +223,17 @@ jobs:
         DEPLOY_STDOUT: ${{ steps.target-deploy.outputs.stdout }}  
       run: |
 
-        # if environment-url set as workflow input, use it
+        echo "If environment-url set as workflow input, use it"
         if [ "${{ inputs.environment-url }}" != "" ]; then
           echo "Setting environment-url from workflow input"
           echo url="${{ inputs.environment-url }}"
           echo "::set-output name=environment-url::${{ inputs.environment-url }}"
           exit 0
+        else
+          echo ">'environment-url' not set"
         fi
 
-        # if make target get-environment-url returns an url, use it
+        echo "If make target get-environment-url returns an url, use it"
         make -n get-environment-url
         if [ "$?" == "0" ]; then
           TARGET_ENV_URL=$(STAGE=${{ inputs.stage }} make get-environment-url -s)
@@ -239,7 +241,7 @@ jobs:
         	OUT_URL=$(echo ${TARGET_ENV_URL} | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
           if [ "$OUT_URL" == "" ]; then
             echo "TARGET_ENV_URL=${TARGET_ENV_URL}"
-            echo "Target 'get-environment-url' should return an URL"
+            echo ">Target 'get-environment-url' should return an URL"
             exit 1
           fi
           echo "Setting environment-url from get-environment-url output"
@@ -247,16 +249,18 @@ jobs:
           echo "::set-output name=environment-url::${OUT_URL}"
           exit 0
         else
-          echo "Target 'get-environment-url' not found"
+          echo ">Target 'get-environment-url' not found"
         fi
 
-        # try to get any URL from target deploy output
+        echo "Try to get any URL from target deploy output"
         OUT_URL=$(echo $DEPLOY_STDOUT | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
         if [ "$OUT_URL" != "" ]; then
           echo "Setting environment-url from target 'deploy' output"
           echo url=${OUT_URL}
           echo "::set-output name=environment-url::${OUT_URL}"
           exit 0
+        else
+          echo ">No URL found in deploy stdout contents"
         fi
 
         echo "No environment-url set"
