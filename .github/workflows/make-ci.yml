@@ -64,11 +64,6 @@ on:
         default: false
         required: false
         type: boolean
-      target-get-environment-url:
-        description: Run target 'get-environment-url'. It should return the environment URL for this workflow run. Env ${DEPLOY_STDOUT} will be available with 'deploy' run outputs
-        default: false
-        required: false
-        type: boolean
       target-undeploy:
         description: Run target 'undeploy'
         default: false
@@ -134,7 +129,6 @@ jobs:
         checkTarget ${{ inputs.target-unit-tests }} unit-tests
         checkTarget ${{ inputs.target-package }} package
         checkTarget ${{ inputs.target-deploy }} deploy
-        checkTarget ${{ inputs.target-get-environment-url }} get-environment-url
         checkTarget ${{ inputs.target-integration-tests }} integration-tests
         checkTarget ${{ inputs.target-undeploy }} undeploy
 
@@ -238,7 +232,8 @@ jobs:
         fi
 
         # if make target get-environment-url returns an url, use it
-        if [ "${{ inputs.target-get-environment-url }}" == "true" ]; then
+        make -n get-environment-url
+        if [ "$?" == "0" ]; then
           TARGET_ENV_URL=$(make get-environment-url)
           # search for a URL in target execution results
         	OUT_URL=$(echo ${TARGET_ENV_URL} | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
@@ -251,6 +246,8 @@ jobs:
           echo url="${OUT_URL}"
           echo "::set-output name=environment-url::${TARGET_ENV_URL}"
           exit 0
+        else
+          echo "Target 'get-environment-url' not found"
         fi
 
         # try to get any URL from target deploy output
