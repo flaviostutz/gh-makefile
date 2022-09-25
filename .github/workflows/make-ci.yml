@@ -41,12 +41,12 @@ on:
         type: boolean
       target-lint:
         description: Run target 'lint'
-        default: true
+        default: false
         required: false
         type: boolean
       target-unit-tests:
         description: Run target 'unit-tests'
-        default: true
+        default: false
         required: false
         type: boolean
       target-package:
