@@ -83,7 +83,7 @@ on:
         required: false
 
 jobs:
-  package-deploy:
+  make-ci:
     runs-on: ubuntu-latest
     
     defaults:
