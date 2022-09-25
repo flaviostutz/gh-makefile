@@ -182,7 +182,7 @@ jobs:
       with:
         node-version: ${{ inputs.tooling-version }}
         cache: npm
-        cache-dependency-path: ${{ inputs.workdir }}/package-lock.json
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
       if: ${{ inputs.tooling == 'node' }}
 
     - uses: actions/setup-go@v3
@@ -210,7 +210,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: artifact-${{ inputs.stage }}
-        path: ${{ inputs.workdir }}/${{ inputs.artifact-path }}
+        path: ${{ inputs.working-directory }}/${{ inputs.artifact-path }}
         retention-days: ${{ inputs.artifact-retention }}
       if: ${{ inputs.artifact-path != '' }}
     
