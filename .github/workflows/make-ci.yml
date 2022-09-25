@@ -36,7 +36,7 @@ on:
         type: string
       target-build:
         description: Run target 'build'
-        default: true
+        default: false
         required: false
         type: boolean
       target-lint:
@@ -223,7 +223,7 @@ jobs:
           STAGE=${{ inputs.stage }} AWS_DEFAULT_REGION=${{ inputs.AWS_DEFAULT_REGION }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} make deploy
       if: ${{ inputs.target-deploy }}
 
-    - name: environment URL
+    - name: resolve environment URL
       id: env-url
       env:
         DEPLOY_STDOUT: ${{ steps.target-deploy.outputs.stdout }}  
@@ -237,7 +237,7 @@ jobs:
           exit 0
         fi
 
-        # if make target-environment-url returns an url, use it
+        # if make target get-environment-url returns an url, use it
         if [ "${{ inputs.target-get-environment-url }}" == "true" ]; then
           TARGET_ENV_URL=$(make get-environment-url)
           if [ "$TARGET_ENV_URL" == "" ]; then
