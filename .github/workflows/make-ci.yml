@@ -210,7 +210,7 @@ jobs:
         name: artifact-${{ inputs.stage }}
         path: ${{ inputs.workdir }}/${{ inputs.artifact-path }}
         retention-days: ${{ inputs.artifact-retention }}
-      if: ${{ inputs.artifact-path != "" }}
+      if: ${{ inputs.artifact-path != '' }}
     
     - name: make deploy
       uses: mathiasvr/command-output@v1
@@ -245,6 +245,15 @@ jobs:
           echo "Setting environment-url from get-environment-url output"
           echo url="${TARGET_ENV_URL}"
           echo "::set-output name=environment-url::${TARGET_ENV_URL}"
+          exit 0
+        fi
+
+        # try to get any URL from target deploy output
+        OUT_URL=$(echo $DEPLOY_STDOUT | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
+        if [ "$OUT_URL" != "" ]; then
+          echo "Setting environment-url from target 'deploy' output"
+          echo url=${OUT_URL}
+          echo "::set-output name=environment-url::${OUT_URL}"
           exit 0
         fi
 
