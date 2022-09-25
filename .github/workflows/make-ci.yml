@@ -240,12 +240,15 @@ jobs:
         # if make target get-environment-url returns an url, use it
         if [ "${{ inputs.target-get-environment-url }}" == "true" ]; then
           TARGET_ENV_URL=$(make get-environment-url)
-          if [ "$TARGET_ENV_URL" == "" ]; then
+          # search for a URL in target execution results
+        	OUT_URL=$(echo ${TARGET_ENV_URL} | { grep -Eo "environment-url: (http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | { grep -Eo "(http|https)://[a-zA-Z0-9./?=_%:-]*" || true; } | head -1)
+          if [ "$OUT_URL" == "" ]; then
+            echo "TARGET_ENV_URL=${TARGET_ENV_URL}"
             echo "Target 'get-environment-url' should return an URL"
             exit 1
           fi
           echo "Setting environment-url from get-environment-url output"
-          echo url="${TARGET_ENV_URL}"
+          echo url="${OUT_URL}"
           echo "::set-output name=environment-url::${TARGET_ENV_URL}"
           exit 0
         fi
