@@ -234,7 +234,9 @@ jobs:
         fi
 
         echo "If make target get-environment-url returns an url, use it"
+        set +e
         make -n get-environment-url
+        set -e
         if [ "$?" == "0" ]; then
           TARGET_ENV_URL=$(STAGE=${{ inputs.stage }} make get-environment-url -s)
           # search for a URL in target execution results
