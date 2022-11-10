@@ -180,11 +180,17 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.tooling-version }}
-        cache: ${{ inputs.tooling-cache }}
-        cache-dependency-path: |
-          ${{ inputs.working-directory }}/package-lock.json
+        cache: npm
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
           ${{ inputs.working-directory }}/yarn.lock
-      if: ${{ inputs.tooling == 'node' }}
+      if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'npm' }}
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.tooling-version }}
+        cache: yarn
+        cache-dependency-path: ${{ inputs.working-directory }}/yarn.lock
+      if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'yarn' }}
 
     - uses: actions/setup-go@v3
       with:
