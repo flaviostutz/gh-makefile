@@ -181,7 +181,6 @@ jobs:
       with:
         node-version: ${{ inputs.tooling-version }}
         cache: npm
-        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
           ${{ inputs.working-directory }}/yarn.lock
       if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'npm' }}
 
@@ -189,7 +188,6 @@ jobs:
       with:
         node-version: ${{ inputs.tooling-version }}
         cache: yarn
-        cache-dependency-path: ${{ inputs.working-directory }}/yarn.lock
       if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'yarn' }}
 
     - uses: actions/setup-go@v3
