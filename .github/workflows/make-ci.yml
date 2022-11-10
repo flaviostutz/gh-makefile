@@ -30,6 +30,11 @@ on:
         description: Version of Node or Golang environment to setup
         type: string
         required: false
+      tooling-cache:
+        description: Type of tooling cache to use
+        default: npm
+        type: string
+        required: false
       stage:
         description: Variable available as ${STAGE} in all Make calls
         required: false
@@ -175,8 +180,10 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.tooling-version }}
-        cache: npm
-        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+        cache: ${{ inputs.tooling-cache }}
+        cache-dependency-path: |
+          ${{ inputs.working-directory }}/package-lock.json
+          ${{ inputs.working-directory }}/yarn.lock
       if: ${{ inputs.tooling == 'node' }}
 
     - uses: actions/setup-go@v3
