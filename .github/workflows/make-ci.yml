@@ -81,7 +81,7 @@ on:
         type: boolean
       git-base-head:
         description: Discover last successful git sha BASE and HEAD and expose it in variables NX_BASE AND NX_HEAD
-        default: false
+        default: true
         required: false
         type: boolean
       AWS_DEFAULT_REGION:
@@ -264,7 +264,7 @@ jobs:
         make -n get-environment-url
         R=$?
         set -e
-        if [ "$R" == "0" ]; then
+        if [ "${{ inputs.target-get-environment-url }}" == "true" ] && [ "$R" == "0" ]; then
           echo "Target 'get-environment-url' exists"
           TARGET_ENV_URL=$(STAGE=${{ inputs.stage }} make get-environment-url -s)
           # search for a URL in target execution results
