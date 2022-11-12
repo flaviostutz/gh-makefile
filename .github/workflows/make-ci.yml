@@ -110,6 +110,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        # required by nrwl/nx-set-shas@v3
+        fetch-depth: 0
 
     - name: Validate inputs and secrets (${{ inputs.working-directory }}) ${{ inputs.stage }}
       run: |
