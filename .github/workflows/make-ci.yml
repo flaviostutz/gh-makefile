@@ -74,6 +74,11 @@ on:
         default: false
         required: false
         type: boolean
+      target-get-environment-url:
+        description: Run target 'get-environment-url'
+        default: true
+        required: false
+        type: boolean
       git-base-head:
         description: Discover last successful git sha BASE and HEAD and expose it in variables NX_BASE AND NX_HEAD
         default: false
