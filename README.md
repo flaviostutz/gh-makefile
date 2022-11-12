@@ -92,6 +92,7 @@ The targets, if enabled in workflow input, are executed in the following order:
 * target-undeploy: Enable target 'undeploy'
 * artifact-retention: Number of days for retaining the generated artifact. Defaults to 3.
 * artifact-path: Upload file or folder as workflow artifact
+* git-base-head: Discover last successful git sha BASE and HEAD and expose it in variables NX_BASE AND NX_HEAD. defaults to false
 * AWS_DEFAULT_REGION: The AWS region to deploy resources to
 
 ### Workflow secrets

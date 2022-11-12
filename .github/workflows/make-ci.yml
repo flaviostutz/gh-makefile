@@ -74,6 +74,11 @@ on:
         default: false
         required: false
         type: boolean
+      git-base-head:
+        description: Discover last successful git sha BASE and HEAD and expose it in variables NX_BASE AND NX_HEAD
+        default: false
+        required: false
+        type: boolean
       AWS_DEFAULT_REGION:
         description: The AWS region to deploy resources to. Will be available as ENV during deploy and undeploy calls
         default: ''
