@@ -202,7 +202,7 @@ jobs:
         cache: yarn
       if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'yarn' }}
 
-    - uses: actions/setup-go@v3
+    - uses: actions/setup-go@v4
       with:
         go-version: ${{ inputs.tooling-version }}
       if: ${{ inputs.tooling == 'golang' }}
