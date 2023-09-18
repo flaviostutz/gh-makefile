@@ -170,8 +170,8 @@ jobs:
 
         # CHECK TOOLING CONFIGURATION
         if [ "${{ inputs.tooling }}" != "" ]; then
-          if [ "${{ inputs.tooling }}" != "node" && "${{ inputs.tooling }}" != "golang" ]; then
-            echo "'tooling' must be one of 'node' or 'golang'"
+          if [ "${{ inputs.tooling }}" != "node" && "${{ inputs.tooling }}" != "golang" && "${{ inputs.tooling }}" != "golang+node" ]; then
+            echo "'tooling' must be one of 'node', 'golang' or 'golang+node'"
             exit 1
           fi
         fi
@@ -183,7 +183,7 @@ jobs:
           fi
         fi
 
-        if [ "${{ inputs.tooling }}" == "golang" ]; then
+        if [ "${{ inputs.tooling }}" == "golang" || "${{ inputs.tooling }}" == "golang+node" ]; then
           if [ "${{ inputs.tooling-version }}" == "" ]; then
             echo "'tooling-version' must be set to the Golang version to use. ex. '1.15', '1.16.x'"
             exit 1
@@ -202,10 +202,16 @@ jobs:
         cache: yarn
       if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'yarn' }}
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+        cache: yarn
+      if: ${{ inputs.tooling == 'golang+node' }}
+
     - uses: actions/setup-go@v4
       with:
         go-version: ${{ inputs.tooling-version }}
-      if: ${{ inputs.tooling == 'golang' }}
+      if: ${{ inputs.tooling == 'golang' || inputs.tooling == 'golang+node' }}
 
     - uses: nrwl/nx-set-shas@v3
 

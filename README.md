@@ -81,7 +81,7 @@ The targets, if enabled in workflow input, are executed in the following order:
 * environment-url: Value to set as environment URL
 * working-directory: base dir used during builds. If using monorepo, specify the relative path of the service folder. ex.: ./services/example1'
 * stage: "stage" used on sls operations as parameter --stage
-* tooling: Tooling environment to setup. Can be "node" or "golang"
+* tooling: Tooling environment to setup. Can be "node", "golang" or "golang+node"
 * tooling-version: Tooling version to setup. eg. 1.5.2 (for golang), 14 (for node)
 * target-build: Enable target 'build'
 * target-lint: Enable target 'lint'
