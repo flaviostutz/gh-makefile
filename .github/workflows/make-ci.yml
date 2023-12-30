@@ -32,7 +32,7 @@ on:
         required: false
       tooling-cache:
         description: Type of tooling cache to use
-        default: npm
+        default: pnpm
         type: string
         required: false
       stage:
@@ -193,19 +193,12 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.tooling-version }}
-        cache: npm
-      if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'npm' }}
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: ${{ inputs.tooling-version }}
-        cache: yarn
-      if: ${{ inputs.tooling == 'node' && inputs.tooling-cache == 'yarn' }}
+        cache: ${{ inputs.tooling-cache }}
+      if: ${{ inputs.tooling == 'node' }}
 
     - uses: actions/setup-node@v3
       with:
         node-version: latest
-        cache: yarn
       if: ${{ inputs.tooling == 'golang+node' }}
 
     - uses: actions/setup-go@v4
