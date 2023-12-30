@@ -32,7 +32,7 @@ on:
         required: false
       tooling-cache:
         description: Type of tooling cache to use
-        default: pnpm
+        default: ''
         type: string
         required: false
       stage:
