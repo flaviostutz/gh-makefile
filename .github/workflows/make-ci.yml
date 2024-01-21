@@ -76,7 +76,7 @@ on:
         type: boolean
       target-get-environment-url:
         description: Run target 'get-environment-url'
-        default: true
+        default: false
         required: false
         type: boolean
       git-base-head:
