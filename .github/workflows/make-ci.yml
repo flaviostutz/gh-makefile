@@ -49,8 +49,18 @@ on:
         default: false
         required: false
         type: boolean
-      target-unit-tests:
-        description: Run target 'unit-tests'
+      target-test:
+        description: Run target 'test'
+        default: false
+        required: false
+        type: boolean
+      target-test-integration:
+        description: Run target 'test-integration'
+        default: false
+        required: false
+        type: boolean
+      target-test-unit:
+        description: Run target 'test-unit'
         default: false
         required: false
         type: boolean
@@ -61,11 +71,6 @@ on:
         type: boolean
       target-deploy:
         description: Run target 'deploy'. AWS_* environments will be availabled during this run
-        default: false
-        required: false
-        type: boolean
-      target-integration-tests:
-        description: Run target 'integration-tests'
         default: false
         required: false
         type: boolean
@@ -144,10 +149,11 @@ jobs:
 
         checkTarget ${{ inputs.target-build }} build
         checkTarget ${{ inputs.target-lint }} lint
-        checkTarget ${{ inputs.target-unit-tests }} unit-tests
+        checkTarget ${{ inputs.target-test }} unit-tests
+        checkTarget ${{ inputs.target-test-unit }} unit-tests
+        checkTarget ${{ inputs.target-test-integration }} unit-tests
         checkTarget ${{ inputs.target-package }} package
         checkTarget ${{ inputs.target-deploy }} deploy
-        checkTarget ${{ inputs.target-integration-tests }} integration-tests
         checkTarget ${{ inputs.target-undeploy }} undeploy
 
         # CHECK AWS KEYS WHEN DOING DEPLOY
@@ -216,9 +222,13 @@ jobs:
       run: STAGE=${{ inputs.stage }} make lint
       if: ${{ inputs.target-lint }}
 
-    - name: make unit-tests
-      run: STAGE=${{ inputs.stage }} make unit-tests
-      if: ${{ inputs.target-unit-tests }}
+    - name: make test
+      run: STAGE=${{ inputs.stage }} make test
+      if: ${{ inputs.target-test }}
+
+    - name: make test-unit
+      run: STAGE=${{ inputs.stage }} make test-unit
+      if: ${{ inputs.target-test-unit }}
 
     - name: make package
       run: STAGE=${{ inputs.stage }} make package
@@ -296,8 +306,8 @@ jobs:
     - name: make integration-tests
       run: |
         echo "ENVIRONMENT_URL=${{ steps.env-url.outputs.environment-url }}"
-        STAGE=${{ inputs.stage }} ENVIRONMENT_URL="${{ steps.env-url.outputs.environment-url }}" make integration-tests
-      if: ${{ inputs.target-integration-tests }}
+        STAGE=${{ inputs.stage }} ENVIRONMENT_URL="${{ steps.env-url.outputs.environment-url }}" make test-integration
+      if: ${{ inputs.target-test-integration }}
 
     - name: make undeploy
       run: STAGE=${{ inputs.stage }} AWS_DEFAULT_REGION=${{ inputs.AWS_DEFAULT_REGION }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} make undeploy
