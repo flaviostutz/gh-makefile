@@ -2,6 +2,8 @@
 
 Github actions workflows for build, test, check and deployment tasks based on  Makefiles
 
+Aligned with the targets defined in [Common Targets](https://github.com/flaviostutz/common-targets)
+
 For a complete example on how to use it, check https://github.com/flaviostutz/aws-serverless-static-website, specifically looking at the files at .github/workflows
 
 Another good monorepo example can be found at https://github.com/flaviostutz/aws-serverless-monorepo-demo
