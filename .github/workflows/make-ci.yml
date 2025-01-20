@@ -149,9 +149,9 @@ jobs:
 
         checkTarget ${{ inputs.target-build }} build
         checkTarget ${{ inputs.target-lint }} lint
-        checkTarget ${{ inputs.target-test }} unit-tests
-        checkTarget ${{ inputs.target-test-unit }} unit-tests
-        checkTarget ${{ inputs.target-test-integration }} unit-tests
+        checkTarget ${{ inputs.target-test }} test
+        checkTarget ${{ inputs.target-test-unit }} test-unit
+        checkTarget ${{ inputs.target-test-integration }} test-integration
         checkTarget ${{ inputs.target-package }} package
         checkTarget ${{ inputs.target-deploy }} deploy
         checkTarget ${{ inputs.target-undeploy }} undeploy
